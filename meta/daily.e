@@ -1,0 +1,1 @@
+(find-configfile "daily.el")
