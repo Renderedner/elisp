@@ -78,10 +78,13 @@
   (interactive)
   (let*
       ((today-date (ts-format "%d-%m-%Y" (ts-now)))
-       (file-name (daily-find-file-name today-date)))
+       (file-name (daily-find-file-name today-date))
+       new-file-flag)
     (if (not file-name) ;; Não encontrou arquivo nenhum
-	(setq file-name (concat my-daily-folder "/" today-date ".org")))
+	(progn (setq file-name (concat my-daily-folder "/" today-date ".org"))
+	       (setq new-file-flag t)))
     (find-file file-name)
+    (if new-file-flag (my-insert-big (ts-format "%d %m %Y" (ts-now))))
     (brnm-daily-mode 1)))
 (defalias 'mfdf 'my-find-daily-file)
 
