@@ -315,7 +315,8 @@
 ;;
 (defun mc-filter-out-meta-folder (list-file-names)
   ()
-  (-filter (lambda (x) (string-match "meta/" x)) list-file-names ))
+  (-filter (lambda (x) (not (string-match "meta/" x))) list-file-names ))
+; (mc-filter-out-meta-folder '("app.py" ".gitignore" "meta/.meta-sync-log"))
 
 (defun mc-copy-meta-folder-to-temp-folder ()
   (shell-command (concat "cp -rf " (_mc-get-git-root-dir) "meta " _mc-directory-for-copying-not-filtered-files))
