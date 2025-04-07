@@ -19,7 +19,7 @@
 ;; (defun eejump-33 () () (swiper ";;\\W\\w"))
 
 (load "main.el")
-;; (find-fline "~/.config/emacs/meta/main.el")
+;; (find-fline "main.el")
 
 (load "major-mode-regexp-mapping.el")
 ;; (find-file "./major-mode-regexp-mapping.el")
@@ -32,7 +32,7 @@
 ;; ( Now it is already being ignored because meta_sync_log is not added to
 ;; ( _mc-file-extensions-to-filter list.
 
-(defvar _mc-sync-log-file-name ".meta_sync_log"
+(defvar _mc-sync-log-file-name "meta/.meta_sync_log"
   "Holds the name of the file that will be stored in the meta branch, and will store a history
    of the commit-hashes of the parallel commits, and the merges from original-branch to meta
    branch, wich will be useful when choosing wich files to filter for the parallel commit.
@@ -55,6 +55,7 @@
 		   (line-beginning-position)
 		   (line-end-position)))
     (buffer-substring-no-properties (+ (match-beginning 1) 1) (+ (match-end 1) 1))))
+;; (find-file (concat (_mc-get-git-root-dir) _mc-sync-log-file-name))
 ;; (_mc-get-last-sync-meta-hash)
 
 
@@ -66,12 +67,14 @@
   "Will return a list of files that change since the commit passed as argument.
    It will compare the current commit from the current branch to the commit passed as parameter
    from the current branch."
-  (shell-command (concat "git diff --name-only " commit-hash))
-  (save-window-excursion
-  (-filter (lambda (x) (> (length x) 0))
-	   (s-split "[\s+\n]\n?"
-		    (with-current-buffer shell-command-buffer-name
-		      (buffer-substring-no-properties (point-min) (point-max)))))))
+  (let ((default-directory (_mc-get-git-root-dir)))
+    (shell-command (concat "git diff --name-only " commit-hash))
+    (-filter (lambda (x) (> (length x) 0))
+	     (s-split "[\s+\n]\n?"
+		      (with-current-buffer shell-command-buffer-name
+			(buffer-substring-no-properties (point-min) (point-max)))))))
+;; (_mc-get-files-that-changed-since-commit ___temp_hash_primeiro_commit)
+;; (_mc-get-files-that-changed-since-commit (concat ___temp_hash_primeiro_commit "\n"))
 ;; (_mc-get-files-that-changed-since-commit "b97bc78d669e6eaea794eb36f2d9f4cb9ff94a45")
 
 (defun _mc-filter-list-of-files-by-file-extension (files)
@@ -158,7 +161,7 @@
 ;; (let ((default-directory "~/chronos-crm/")) (_mc-get-files-that-changed-since-commit (_mc-get-last-sync-meta-hash)))
 ;; (let ((default-directory "~/chronos-crm/")) (_mc-getting-not-filtered-files-names (_mc-get-files-that-changed-since-commit (_mc-get-last-sync-meta-hash))))
 
-(defvar _mc-directory-for-copying-not-filtered-files "~/.meta-temporary-not-filtered-files/"
+(defvar _mc-directory-for-copying-not-filtered-files "/tmp/meta-temporary-not-filtered-files/"
   "This directory should not conflict with any other directory already created, and with contents in
    your filesystem. This directory will be created and removed on a parallel commit, if there are files
    changed that should not be filtered.")
@@ -186,8 +189,9 @@
   ()
   "This function will create the DIRECTORIES in WHERE
    WHERE must have the final / and directories should not have an initial /"
-  (dolist (dir directories)
-    (shell-command (concat "mkdir -p " where dir))))
+  (let ((default-directory (_mc-get-git-root-dir)))
+    (dolist (dir directories)
+      (shell-command (concat "mkdir -p " where dir)))))
 ;; (_mc-create-directory-structure "~/_mc-teste/" (_mc-get-dir-structure-from-files (_mc-get-files-that-changed-since-commit "b97bc78d669e6eaea794eb36f2d9f4cb9ff94a45")))
 ;; (find-file "~/_mc-teste/")
 ;; (shell-command "rm -r ~/_mc-teste/")
@@ -207,7 +211,8 @@
   ()
   "Gets a list of file-names as parameter and filter them to get only those that will not be filtered, get what directories should
    be created, create them in the temporary directory defined above and copy the files"
-  (let ((not-filtered-files-names (_mc-getting-not-filtered-files-names files)))
+  (let ((default-directory (_mc-get-git-root-dir))
+	(not-filtered-files-names (_mc-getting-not-filtered-files-names files)))
     (_mc-create-directory-structure _mc-directory-for-copying-not-filtered-files (_mc-get-dir-structure-from-files not-filtered-files-names))
     (dolist (file not-filtered-files-names)
       (shell-command (concat "cp " (_mc-get-git-root-dir) file " " _mc-directory-for-copying-not-filtered-files file))
@@ -283,9 +288,10 @@
 (defun _mc-get-last-commit-hash ()
   ()
   "Get the current commit hash"
-  (shell-command "git rev-parse HEAD")
-  (with-current-buffer shell-command-buffer-name
-    (buffer-substring-no-properties (point-min) (- (point-max) 1))))
+  (let ((default-directory (_mc-get-git-root-dir)))
+    (shell-command "git rev-parse HEAD")
+    (with-current-buffer shell-command-buffer-name
+      (buffer-substring-no-properties (point-min) (- (point-max) 1)))))
 ;; (_mc-get-last-commit-hash)
 
 ;; ( When applying changes, I need to update the _mc-sync-log-file-name file.
@@ -326,7 +332,9 @@
   "This function will get whatever changed since last sincronization between the original and meta branhces,
    signalized by the _mc-sync-log-file-name file, adding the value of the last commit-hash. Filter these files
    removing the meta content, change to the original branch, apply the changes, stage all files."
-  (let* ((files-that-changed-since-last-sync-commit
+  (let ((default-directory (_mc-get-git-root-dir)))
+  (let* (
+	 (files-that-changed-since-last-sync-commit
 	  (_mc-get-files-that-changed-since-commit
 	   (_mc-get-last-sync-meta-hash)))
 	 (files-with-contents
@@ -355,7 +363,7 @@
 	  (_mc-apply-change files-with-contents)
 	  ;; (_mc-stage-files '("*"))
 	  )
-      (switch-to-buffer shell-command-buffer-name))))
+      (switch-to-buffer shell-command-buffer-name)))))
 ;; (shell-command "sudo rm -r ~/config-backup/; cp -r ~/.config/emacs ~/config-backup/")
 ;; (shell-command "cd ~/config-backup/; git checkout meta")
 ;; (find-file "~/config-backup/")

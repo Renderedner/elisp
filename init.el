@@ -1,3 +1,26 @@
+; «pavucontrol-key»  (to ".pavucontrol-key")
+; «rstdoc-react»  (to ".rstdoc-react")
+; «daily-search»  (to ".daily-search")
+; «official-org-abandon»  (to ".official-org-abandon")
+; «rst-doc-prep»  (to ".rst-doc-prep")
+;; «ee-rstdoc-:gunicorn»  (to ".ee-rstdoc-:gunicorn")
+;; «ee-rstdoc-:flask»  (to ".ee-rstdoc-:flask")
+; «my-eewrap-eepitch»  (to ".my-eewrap-eepitch")
+;; «ee-rstdoc-:flasklogin»  (to ".ee-rstdoc-:flasklogin")
+;; «ee-rstdoc-:gdal»  (to ".ee-rstdoc-:gdal")
+;; «ee-rstdoc-:rasterio»  (to ".ee-rstdoc-:rasterio")
+;; «ee-rstdoc-:geopandas»  (to ".ee-rstdoc-:geopandas")
+;   «geopandas_api_tofile»  (to ".geopandas_api_tofile")
+;; «ee-rstdoc-:pyproj»  (to ".ee-rstdoc-:pyproj")
+;   «pyproj-api-geod»  (to ".pyproj-api-geod")
+;; «ee-rstdoc-:shapely»  (to ".ee-rstdoc-:shapely")
+;; «dudasd-project»  (to ".dudasd-project")
+;; «api-linestring»  (to ".api-linestring")
+; «cria-anchor-direita-texto»  (to ".cria-anchor-direita-texto")
+; «h2m-scan»  (to ".h2m-scan")
+; «gpt»  (to ".gpt")
+; «pdf-view-enable-midnight-mode»  (to ".pdf-view-enable-midnight-mode")
+
 (set-frame-font "Iosevka 9" nil t)
 
 ;; https://github.com/radian-software/straight.el#getting-started
@@ -139,7 +162,8 @@
 
 
 ;; (find-fline "~/p/meta/")
-;; (add-to-list 'load-path "~/p/meta/")
+(add-to-list 'load-path "~/.config/emacs/meta-package")
+;; (find-fline "meta-package/")
 (load "meta-package/overlay-hide.el")
 (load "meta-package/new.el")
 (load "meta-package/sepia-fontlock.el")
@@ -211,14 +235,20 @@
 (defalias 'bttt 'brnm-toggle-theme-tao)
 
 
+; «.gpt»	(to "gpt")
 (straight-use-package 'gpt)
 (require 'gpt)
-(setq gpt-openai-engine "gpt-3.5-turbo-0125")
+;; (setq gpt-openai-engine "gpt-3.5-turbo-0125")
 ;; (setq gpt-openai-engine "gpt-4")
+;; https://community.openai.com/t/tier-3-api-account-but-no-access-to-o3-mini-receiving-http-error-400-invalid-model-id/1116313/2
+;; (setq gpt-openai-engine "o3-mini")
+; (setq gpt-openai-engine "gpt-4o-mini")
 (setq gpt-openai-key    (getenv "OPENAI_KEY"))
 ;; (setq gpt-openai-key    "")
 
-
+; (find-fline "/home/redner/.emacs.d/straight/repos/gpt.el/gpt2.py")
+(setq gpt-script-path "/home/redner/.emacs.d/straight/repos/gpt.el/gpt2.py")
+(setq gpt-openai-engine "o3-mini")
 
 ;; (find-dailyfile "18-03-2024.org")
 (defun brnm-find-ip-address ()
@@ -285,7 +315,7 @@
 
 (defun my-insert-big (string)
     (interactive "s")
-  (insert (s-replace-regexp "^" "## " 
+  (insert (s-replace-regexp "^" ";; " 
 	   (shell-command-to-string (concat "figlet " string)))))
 (defalias 'mib 'my-insert-big)
 
@@ -427,7 +457,7 @@
 ; (pyvenv-activate "~/.venv/")
 
 (defun brnm-screen-off () (interactive) (shell-command "xrandr --output eDP-1 --off"))
-(defun brnm-screen-on () (interactive) (shell-command "xrandr --output eDP-1 --auto"))
+(defun brnm-screen-on  () (interactive) (shell-command "xrandr --output eDP-1 --auto"))
 (define-key global-map (kbd "s-s") #'brnm-screen-off)
 (define-key global-map (kbd "s-S") #'brnm-screen-on)
 
@@ -459,3 +489,318 @@
 )
 
 (setq ee-git-dir "~/clones/")
+
+(setq ee-find-youtube-video-program 'find-firefox)
+
+(defun rednerwrap-anchor () (interactive)
+       (ee-this-line-wrapn 1 'ee-wrap-anchor)
+       (save-excursion
+	(evil-normal-state)
+	(previous-line)
+	(eek "dd")
+	(beginning-of-buffer)
+	(forward-paragraph)
+	(yank)))
+
+; (define-key eev-mode-map "\M-A"     'eewrap-anchor)
+(define-key eev-mode-map "\M-A" 'rednerwrap-anchor)
+
+; «.pavucontrol-key»	(to "pavucontrol-key")
+; (find-daily "11-10-2024.org" ".pavucontrol-key")
+(define-key global-map (kbd "s-P") (lambda () (interactive) (start-process "pavucontrol" nil "pavucontrol")))
+
+; «.rstdoc-react»	(to "rstdoc-react")
+;; Skel: (find-rstdoc-links :react)
+(defvar ee-rstdoc-:react
+      '(:base      "index"
+        :base-web  "https://react.dev/"
+        :base-html "file:///usr/share/doc/python3.11-doc/html/"
+        :base-rst  "/home/redner/clones/react.dev-main/react.dev-main/src/content/"
+        :rst       ".md"
+	:res       ("#.*$" "\\?.*$" ".html$" ".txt$" ".rst$" "^file://"
+                    "^https://react.dev/"
+		    "^/home/redner/clones/react.dev-main/react.dev-main/src/content/"
+		    "^~/clones/react.dev-main/react.dev-main/src/content/")
+        :kill      rdk
+	:htm       ""
+	)
+      "See: (find-code-rstdoc :react)")
+
+(defalias 'ee-rstdoc-browse-url 'find-firefox)
+; (defalias 'ee-rstdoc-browse-url 'find-googlechrome)
+
+;; (find-code-rstdoc :react)
+        (code-rstdoc :react)
+(setq ee-googlechrome-program "chromium")
+
+(defun eejump-201 () (find-file "~/todo.e"))
+
+
+
+
+; «.daily-search»	(to "daily-search")
+(defun  eewrap-daily-search () (interactive)
+  (ee-this-line-wrapn 1 'ee-wrap-daily-search))
+(defun ee-wrap-daily-search (query)
+  "An internal function used by `eewrap-daily-search'."
+  (ee-template0 "\
+{(ee-HS `(find-dailysearch ,query))}"))
+(define-key eev-mode-map (kbd "s-d") 'eewrap-daily-search)
+
+
+; «.official-org-abandon»	(to "official-org-abandon")
+(add-to-list 'auto-mode-alist '("\\.org\\'". emacs-lisp-mode))
+
+
+
+; «.rst-doc-prep»	(to "rst-doc-prep")
+(ee-rstdoc-default-defuns)
+
+
+;; «.ee-rstdoc-:gunicorn»	(to "ee-rstdoc-:gunicorn")
+; (find-daily "04-11-2024.org" ".gunicorn-docs")
+; # (find-git-links "https://github.com/benoitc/gunicorn" "gunicorn")
+; # (code-c-d "gunicorn" "~/clones/gunicorn/")
+; # (find-gunicornfile "")
+;  (eepitch-vterm)
+; cd ~/clones/gunicorn/docs/
+; make html
+; # As páginas HTML estão em build/html.
+;; Skel: (find-rstdoc-links :gunicorn)
+(setq ee-rstdoc-:gunicorn
+      '(:base      "index"
+        :base-web  "https://docs.gunicorn.org/en/stable/"
+        :base-html "file:///home/redner/clones/gunicorn/docs/build/html/"
+        :base-rst  "/home/redner/clones/gunicorn/docs/source/"
+        :rst       ".rst"
+        :res       ("#.*$" "\\?.*$" ".html$" ".txt$" ".rst$" "^file://"
+                    "^https://docs.gunicorn.org/en/stable/"
+                    "^/home/redner/clones/gunicorn/docs/build/html/"
+                    "^/home/redner/clones/gunicorn/docs/source/")
+        :kill      gunik
+	))
+
+;; (find-code-rstdoc :gunicorn)
+        (code-rstdoc :gunicorn)
+
+
+
+
+;; «.ee-rstdoc-:flask»	(to "ee-rstdoc-:flask")
+; (find-daily "04-11-2024.org" ".flask-docs")
+; (find-daily "03-11-2024.org" ".rst-doc-flask")
+; (code-c-d "flask" "~/clones/flask/")
+; ; (find-flaskfile "")
+;  (eepitch-vterm)
+; cd ~/clones/flask/docs
+; make 
+; make html
+; # As páginas HTML estão em _build/html.
+; ; (find-flaskfile "docs/_build/html")
+; 
+; pacman -Ss sphinx
+; sudo pacman -Sy python-sphinx
+; pacman -Ss sphinx | grep themes
+; sudo pacman -Sy python-pallets-sphinx-themes
+; pacman -Ss flask
+; sudo pacman -Sy python-flask
+; pacman -Ss sphinx | grep contrib
+; sudo pacman -Sy python-sphinxcontrib-log-cabinet
+; pacman -Ss sphinx | grep tabs
+; sudo pacman -Sy python-sphinx-tabs
+; 
+; (find-rstdoc-intro "7. `find-rstdoc-links'")
+; (find-rstdoc-intro "3. `code-rstdoc'")
+;; Skel: (find-rstdoc-links :flask)
+(setq ee-rstdoc-:flask
+      '(:base      "index"
+        :base-web  "https://flask.palletsprojects.com/en/stable/"
+        :base-html "file:///home/redner/clones/flask/docs/_build/html/"
+        :base-rst  "~/clones/flask/docs/"
+        :rst       ".rst"
+        :res       ("#.*$" "\\?.*$" ".html$" ".txt$" ".rst$" "^file://"
+                    "^https://flask.palletsprojects.com/en/stable/"
+                    "^/home/redner/clones/flask/docs/_build/html/"
+                    "^/home/redner/clones/flask/docs/")
+        :kill      flaskk
+	))
+
+;; (find-code-rstdoc :flask)
+        (code-rstdoc :flask)
+
+; «.my-eewrap-eepitch»	(to "my-eewrap-eepitch")
+; (find-efunction 'eewrap-eepitch)
+(defun my-eewrap-eepitch () (interactive)
+  "Convert the current into an eepitch block (three lines long)."
+  (let* ((fmt   " (eepitch-%s)")
+	 (li    (ee-this-line-extract))
+	 (newli (format fmt li li)))
+    (insert (ee-adjust-red-stars newli)))
+  (ee-next-line 1))
+(define-key global-map (kbd "M-T") #'my-eewrap-eepitch)
+(define-key eev-mode-map (kbd "M-T") #'my-eewrap-eepitch)
+
+
+
+
+;; «.ee-rstdoc-:flasklogin»	(to "ee-rstdoc-:flasklogin")
+;; (find-daily "16-11-2024.org" ".flask-login-docs-rst")
+;; Skel: (find-rstdoc-links :flasklogin)
+(setq ee-rstdoc-:flasklogin
+      '(:base      "index"
+        :base-web  "https://flask-login.readthedocs.io/en/latest/"
+        :base-html "file:///home/redner/clones/flask-login/docs/build/html/"
+        :base-rst  "/home/redner/clones/flask-login/docs/"
+        :rst       ".rst"
+        :res       ("#.*$" "\\?.*$" ".html$" ".txt$" ".rst$" "^file://"
+                    "^https://flask-login.readthedocs.io/en/latest/"
+                    "^home/redner/clones/flask-login/docs/build/html/"
+                    "^/home/redner/clones/flask-login/docs/")
+        :kill      flogk
+	))
+
+;; (find-code-rstdoc :flasklogin)
+        (code-rstdoc :flasklogin)
+
+;; «.ee-rstdoc-:gdal»	(to "ee-rstdoc-:gdal")
+;; Skel: (find-rstdoc-links :gdal)
+(setq ee-rstdoc-:gdal
+      '(:base      "index"
+        :base-web  "https://gdal.org/en/latest/"
+        :base-html "file:///home/redner/clones/gdal/doc/build/html/"
+        :base-rst  "/home/redner/clones/gdal/doc/source/"
+        :rst       ".rst"
+        :res       ("#.*$" "\\?.*$" ".html$" ".txt$" ".rst$" "^file://"
+                    "^https://gdal.org/en/latest/"
+                    "^/home/redner/clones/gdal/doc/build/html/"
+                    "^/home/redner/clones/gdal/doc/source/")
+        :kill      gdalk
+	))
+
+;; (find-code-rstdoc :gdal)
+        (code-rstdoc :gdal)
+
+;; «.ee-rstdoc-:rasterio»	(to "ee-rstdoc-:rasterio")
+;  (find-daily "02-12-2024.org" ".rasterio-documentation")
+;; Skel: (find-rstdoc-links :rasterio)
+(setq ee-rstdoc-:rasterio
+      '(:base      "index"
+        :base-web  "https://rasterio.readthedocs.io/en/stable/"
+        :base-html "file:///home/redner/clones/rasterio/docs/_build/html/"
+        :base-rst  "/home/redner/clones/rasterio/docs/"
+        :rst       ".rst"
+        :res       ("#.*$" "\\?.*$" ".html$" ".txt$" ".rst$" "^file://"
+                    "^https://rasterio.readthedocs.io/en/stable/"
+                    "^/home/redner/clones/rasterio/docs/_build/html/"
+                    "^/home/redner/clones/rasterio/docs/")
+        :kill      rastk
+	))
+
+;; (find-code-rstdoc :rasterio)
+        (code-rstdoc :rasterio)
+
+;; «.ee-rstdoc-:geopandas»	(to "ee-rstdoc-:geopandas")
+; (find-daily "06-12-2024.org" ".geopandas-docs")
+;; Skel: (find-rstdoc-links :geopandas)
+(setq ee-rstdoc-:geopandas
+      '(:base      "index"
+        :base-web  "https://geopandas.org/en/stable/"
+        :base-html "file:///home/redner/clones/geopandas/doc/build/html/"
+        :base-rst  "~/clones/geopandas/doc/source/"
+        :rst       ".rst"
+        :res       ("#.*$" "\\?.*$" ".html$" ".txt$" ".rst$" "^file://"
+                    "^https://geopandas.org/en/stable/"
+                    "^/home/redner/clones/geopandas/doc/build/html/"
+                    "^~/clones/geopandas/doc/source/")
+        :kill      geopk
+	))
+
+;; (find-code-rstdoc :geopandas)
+        (code-rstdoc :geopandas)
+
+
+; «.geopandas_api_tofile»	(to "geopandas_api_tofile")
+; (find-html2pdf-links "api_tofile" "https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.to_file.html#geopandas.GeoDataFrame.to_file")
+(code-pdf-page  "api_tofile" "$S/https/geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.to_file.html#geopandas.GeoDataFrame.to_file.pdf")
+(code-pdf-text8 "api_tofile" "$S/https/geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.to_file.html#geopandas.GeoDataFrame.to_file.pdf")
+; (page-utils-mode 1)
+; (find-api_tofiletext 1)
+
+;; «.ee-rstdoc-:pyproj»	(to "ee-rstdoc-:pyproj")
+;; (find-daily "07-12-2024.org" ".pyproj-docs")
+;; Skel: (find-rstdoc-links :pyproj)
+(setq ee-rstdoc-:pyproj
+      '(:base      "index"
+        :base-web  "https://pyproj4.github.io/pyproj/stable/"
+        :base-html "file:///home/redner/clones/pyproj/docs/_build/html/"
+        :base-rst  "~/clones/pyproj/docs/"
+        :rst       ".rst"
+        :res       ("#.*$" "\\?.*$" ".html$" ".txt$" ".rst$" "^file://"
+                    "^https://pyproj4.github.io/pyproj/stable/"
+                    "^/home/redner/clones/pyproj/docs/_build/html/"
+                    "^~/clones/pyproj/docs/")
+        :kill      pyprjk
+	))
+
+;; (find-code-rstdoc :pyproj)
+        (code-rstdoc :pyproj)
+
+; «.pyproj-api-geod»	(to "pyproj-api-geod")
+; (find-html2pdf-links "pyproj-api-geod" "https://pyproj4.github.io/pyproj/stable/api/geod.html#pyproj.Geod")
+(code-pdf-page  "pyproj-api-geod" "$S/https/pyproj4.github.io/pyproj/stable/api/geod.html#pyproj.Geod.pdf")
+(code-pdf-text8 "pyproj-api-geod" "$S/https/pyproj4.github.io/pyproj/stable/api/geod.html#pyproj.Geod.pdf")
+; (page-utils-mode 1)
+; (find-pyproj-api-geodtext 1)
+
+;; «.ee-rstdoc-:shapely»	(to "ee-rstdoc-:shapely")
+; (find-daily "07-12-2024.org" ".shapely")
+;; Skel: (find-rstdoc-links :shapely)
+(setq ee-rstdoc-:shapely
+      '(:base      "index"
+        :base-web  "https://shapely.readthedocs.io/en/stable/"
+        :base-html "file:///home/redner/clones/shapely/docs/_build/html/"
+        :base-rst  "~/clones/shapely/docs/"
+        :rst       ".rst"
+        :res       ("#.*$" "\\?.*$" ".html$" ".txt$" ".rst$" "^file://"
+                    "^https://shapely.readthedocs.io/en/stable/"
+                    "^/home/redner/clones/shapely/docs/_build/html/"
+                    "^~/clones/shapely/docs/")
+        :kill      shpk
+	))
+
+;; (find-code-rstdoc :shapely)
+        (code-rstdoc :shapely)
+
+
+;; «.dudasd-project»	(to "dudasd-project")
+;; (find-ddprjfile "")
+;; (find-ddprjfile "ddprj.el")
+; (load "~/p/h2m/dudasprj/ddprj.el")
+
+; «.api-linestring»	(to "api-linestring")
+(code-pdf-page  "api-linestring" "$S/https/shapely.readthedocs.io/en/stable/reference/shapely.LineString.html#shapely.LineString.pdf")
+(code-pdf-text8 "api-linestring" "$S/https/shapely.readthedocs.io/en/stable/reference/shapely.LineString.html#shapely.LineString.pdf")
+; (page-utils-mode 1)
+; (find-api-linestringtext 1)
+
+
+
+; «.cria-anchor-direita-texto»	(to "cria-anchor-direita-texto")
+; (find-daily "25-12-2024.org" ".cria-anchor-direita-texto")
+(defun cria-anchor-direita-texto (texto)
+  (interactive "s")
+  (save-excursion
+    (eek "<<evil-normal-state>> A")
+    (insert (s-concat " ; «" texto "» (to \"." texto "\")"))
+    (eek "<<evil-normal-state>> gg M-}")
+    (insert (s-concat "; «." texto "» (to \"" texto "\")\n"))))
+
+(define-key global-map (kbd "s-a") 'cria-anchor-direita-texto)
+
+; «.h2m-scan»	(to "h2m-scan")
+; (load "/home/redner/opencv-test/templates.el")
+; (find-fline "/home/redner/opencv-test/templates.el")
+
+; «.pdf-view-enable-midnight-mode»	(to "pdf-view-enable-midnight-mode")
+(defun brnm-enable-midnight-mode () (pdf-view-midnight-minor-mode 0))
+(add-hook 'pdf-view-mode-hook #'brnm-enable-midnight-mode)

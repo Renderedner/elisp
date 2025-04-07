@@ -26,11 +26,12 @@
 ;; ( 
 (defun _mc-get-list-of-branches () ()
        ;; ( considerando que está numa pasta num repositório git
+       (let ((default-directory (_mc-get-git-root-dir)))
        (shell-command "git branch --list")
        (-filter (lambda (x) (> (length x) 0))
 	(s-split "[\s+\n]\n?"
 		 (string-replace "*" ""
-				 (ee-buffer-contents0 shell-command-buffer-name)))))
+				 (ee-buffer-contents0 shell-command-buffer-name))))))
 ;; (_mc-get-list-of-branches)
 
 (defun _mc-check-if-meta-branch-exists () ()
@@ -38,19 +39,23 @@
 ;; (_mc-check-if-meta-branch-exists)
 
 (defun _mc-create-meta-branch () ()
-       (shell-command "git branch meta"))
+       (let ((default-directory (_mc-get-git-root-dir)))
+       (shell-command "git branch meta")))
 
 (defun _mc-switch-to-branch (branch-name) ()
-       (shell-command (concat "git checkout " branch-name)))
+       (let ((default-directory (_mc-get-git-root-dir)))
+       (shell-command (concat "git checkout " branch-name))))
 
 (defun _mc-stage-files (files)
   ()
-  (dolist (f files)
-    (shell-command (concat "git add " f))))
+  (let ((default-directory (_mc-get-git-root-dir)))
+    (dolist (f files)
+      (shell-command (concat "git add " f)))))
 
 (defun _mc-commit-with-message (message)
   ()
-  (shell-command (concat "git commit -m \"" message "\"")))
+  (let ((default-directory (_mc-get-git-root-dir)))
+  (shell-command (concat "git commit -m \"" message "\""))))
 
 
 ;; (find-fline "./overlay-hide.el")

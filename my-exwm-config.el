@@ -35,6 +35,9 @@
         ([?\s-s] . brnm-screen-off)
         ([?\s-S] . brnm-screen-on)
 
+        ([?\s-J] . mfdf)
+        ([?\s-P] . (lambda () (interactive) (start-process "pavucontrol" nil "pavucontrol")))
+
         ([?\M-!] . shell-command)
         ([?\s-p] . print-screen)
         ([?\s-1] . delete-other-windows)

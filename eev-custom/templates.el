@@ -8,6 +8,8 @@
 ;; «.find-yttranscript-links»	(to "find-yttranscript-links")
 ;; «.find-iw-links»	(to "find-iw-links")
 ;; «.find-princeurl-links»	(to "find-princeurl-links")
+;; «find-aur-links»  (to ".find-aur-links")
+;; «find-quickpush-links»  (to ".find-quickpush-links")
 
 
 
@@ -330,19 +332,48 @@ npm start
     (apply
      'find-elinks
      `((find-html2pdf-links ,c ,url ,@pos-spec-list)
+       (find-html2pdf-links1 ,c ,url ,@pos-spec-list)
        ;; Convention: the first sexp always regenerates the buffer.
        (find-efunction 'find-html2pdf-links)
        ""
        ,(ee-template0 "\
 {ee-hyperlink-prefix}To save the pdf, do M-e, M-x brg and C-p in:
- (kill-new \"/tmp/print\")
- (find-firefox \"{url}\")
-
  (eepitch-shell2)
 mkdir -p {path}
 cd       {path}
-cp -v /tmp/print.pdf \\
-         {path}.pdf
+wkhtmltopdf {url} {path}.pdf
+
+{ee-hyperlink-prefix}<{c}>
+(code-pdf-page  \"{c}\" \"{path}.pdf\")
+(code-pdf-text8 \"{c}\" \"{path}.pdf\")
+(page-utils-mode 1)
+{ee-hyperlink-prefix}(find-{c}text 1)
+")
+       )
+     pos-spec-list))
+  (sh-mode))
+
+(defun find-html2pdf-links1 (&optional c url &rest pos-spec-list)
+"Visit a temporary buffer containing hyperlinks for html2pdf."
+  (interactive)
+  (setq c (or c "{c}"))
+  (setq url (or url "{url}"))
+  (let* ((path (ee-url-to-fname0 url))
+	 (ee-hyperlink-prefix "# "))
+    (apply
+     'find-elinks
+     `((find-html2pdf-links1 ,c ,url ,@pos-spec-list)
+       (find-html2pdf-links  ,c ,url ,@pos-spec-list)
+       ;; Convention: the first sexp always regenerates the buffer.
+       (find-efunction 'find-html2pdf-links1)
+       ""
+       ,(ee-template0 "\
+{ee-hyperlink-prefix}To save the pdf, do M-e, M-x brg and C-p in:
+ (kill-new \"/tmp/tmp.pdf\")
+ (find-firefox \"{url}\")
+ (eepitch-shell2)
+mkdir -p              {path}
+cp       /tmp/tmp.pdf {path}.pdf
 
 {ee-hyperlink-prefix}<{c}>
 (code-pdf-page  \"{c}\" \"{path}.pdf\")
@@ -463,13 +494,14 @@ pacman -Ql {query}
 # (find-youtubedl-links nil nil \"{hash}\" nil \"{c}\")
 
  (let ((default-directory \"~/\")) (eepitch-vterm))
-source ~/.venv/bin/activate
+source ~/.ytvenv/bin/activate
 python
 from youtube_transcript_api import YouTubeTranscriptApi
 from math import floor
 vid    = \"{hash}\"
 f      = \"find-{c}video\"
 tr     = YouTubeTranscriptApi.get_transcript(vid)
+# tr     = YouTubeTranscriptApi.get_transcript(vid, languages=['pt'])
 
 times  = [i['start'] for i in tr]
 times  = [floor(i) for i in times]
@@ -477,6 +509,10 @@ times  = ['\"' + str(i // 60) + ':' + str(i%60) + '\"' for i in times]
 
 texts  = [i['text'] for i in tr]
 texts  = ['\"' + i + '\"' for i in texts]
+
+
+import re
+texts  = [re.sub(r'\\n', \" \", i) for i in texts]
 
 links  = '\\n'.join(('(' + f + \" \" + time + \" \" + text + \")\" for time, text in zip(times, texts))) 
 print(links)
@@ -492,7 +528,9 @@ with open(\"transcripts/{c}-{hash}.txt\", \"w\") as file:
 
 ;; «find-iw-links»  (to ".find-iw-links")
 ;; Skel: (find-find-links-links-new "iw" "network-name network-password" "ee-hyperlink-prefix")
-;; Test: (find-iw-links "PUNFT_rep" "Nina1949")
+;; Test: (find-iw-links "Punft"          "Nina1949")
+;; Test: (find-iw-links "VILLA_DA_PRAIA" "Nina1949")
+;; Test: (find-iw-links "VILLA_DA_PRAIA" "Celia1999")
 ;;
 (defun find-iw-links (&optional network-name network-password &rest pos-spec-list)
 "Visit a temporary buffer containing hyperlinks for iw."
@@ -516,6 +554,8 @@ station wlan0 scan
 station wlan0 get-networks
 station wlan0 connect {network-name}
 {network-password}
+
+known-networks {network-name} forget
 ")
        )
      pos-spec-list)))
@@ -581,3 +621,67 @@ prince --media=print \\
        -o {fnamepdf}  \\
            {url}
 ")))
+
+;; «.find-aur-links»	(to "find-aur-links")
+;; Skel: (find-find-links-links-new "aur" "package-name" "")
+;; Test: (find-aur-links)
+;;
+(defun find-aur-links (&optional package-name &rest pos-spec-list)
+"Visit a temporary buffer containing hyperlinks for aur."
+  (interactive)
+  (let ((ee-hyperlink-prefix "# "))
+  (setq package-name (or package-name "{package-name}"))
+  (apply
+   'find-elinks
+   `((find-aur-links ,package-name ,@pos-spec-list)
+     ;; Convention: the first sexp always regenerates the buffer.
+     (find-efunction 'find-aur-links)
+     ""
+     ,(ee-template0 "\
+# (find-firefox \"https://aur.archlinux.org/packages/{package-name}\")
+# (find-firefox \"https://aur.archlinux.org/packages?O=0&K={package-name}\")
+ (eepitch-vterm)
+cd ~/clones/
+git clone https://aur.archlinux.org/{package-name}.git
+cd {package-name}
+makepkg -s
+makepkg -i
+
+
+# (find-firefox \"https://archlinux.org/packages?q={package-name}\")
+ (eepitch-vterm)
+pacman -Ss {package-name}
+sudo pacman -Sy {package-name}
+")
+     )
+   pos-spec-list)
+  (sh-mode)))
+
+;; «.find-quickpush-links»	(to "find-quickpush-links")
+;; Skel: (find-find-links-links-new "quickpush" "path" "ee-hyperlink-prefix tmst")
+;; Test: (find-quickpush-links)
+;;
+(defun qqpush-notes () (interactive) (find-quickpush-links "~/notes/"))
+(defun find-quickpush-links (&optional path &rest pos-spec-list)
+"Visit a temporary buffer containing hyperlinks for quickpush."
+  (interactive)
+  (setq path (or path "{path}"))
+  (let* ((ee-hyperlink-prefix "; ")
+         (tmst (ts-format "[%d-%m-%Y|%H:%M]" (ts-now)))) ; (find-efunction 'tmst)
+    (apply
+     'find-elinks
+     `((find-quickpush-links ,path ,@pos-spec-list)
+       ;; Convention: the first sexp always regenerates the buffer.
+       (find-efunction 'find-quickpush-links)
+       ""
+       ,(ee-template0 "\
+ (eepitch-vterm)
+cd ~/notes/
+git add *
+cgs
+git commit -m \"{tmst}\"
+git push -u origin main
+")
+       )
+     pos-spec-list)))
+
